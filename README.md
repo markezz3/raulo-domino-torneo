@@ -1,17 +1,39 @@
-# raulo_domino
+# 🏆 Raulo Dominó - Torneo de Parejas App
 
-A new Flutter project.
 
-## Getting Started
+Aplicación desarrollada en Flutter para administrar torneos de dominó en parejas con rotaciones automáticas.
 
-This project is a starting point for a Flutter application.
+## Características
 
-A few resources to get you started if this is your first Flutter project:
+- Sistema de 3 partidas
+- Rotación automática de parejas
+- Captura manual de puntos
+- Confirmación de victoria
+- Deshacer movimientos
+- Tabla general automática
+- Desempate por diferencial de puntos
+- Soporte para nombres personalizados
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Tecnologías
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Flutter
+- Dart
+
+## Estado del proyecto
+
+🚧 MVP funcional en desarrollo
+
+
+## Flutter application
+
+El desarrollo de la aplicación esta basado en Flutter.
+
+Algunos de los recursos que fueron utilizados:
+
+- [Aprendiendo Flutter](https://docs.flutter.dev/get-started/learn-flutter)
+- [Comenzando a usar Flutter](https://docs.flutter.dev/get-started/codelab)
+- [Bases y recursos](https://docs.flutter.dev/reference/learning-resources)
+
+Para cualquier duda, consultar la documentación de Flutter.
+[Documentación en Línea](https://docs.flutter.dev/).
+
