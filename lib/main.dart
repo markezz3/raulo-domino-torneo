@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/setup_screen.dart';
+import 'screens/splash_screen.dart';
 
 void main() {
   runApp(const RauloDominoApp());
@@ -13,7 +13,7 @@ class RauloDominoApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Raulo Dominó',
-      home: SetupScreen(),
+      home: SplashScreen(),
     );
   }
 }
