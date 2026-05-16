@@ -50,16 +50,12 @@ class _SetupScreenState extends State<SetupScreen> {
     super.dispose();
   }
 
-  Widget campoJugador(
-    String label,
-    TextEditingController controller,
-  ) {
+  Widget campoJugador(String label, TextEditingController controller) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        vertical: 8,
-      ),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: TextField(
         controller: controller,
+        textInputAction: TextInputAction.next,
         decoration: InputDecoration(
           border: const OutlineInputBorder(),
           labelText: label,
@@ -71,45 +67,49 @@ class _SetupScreenState extends State<SetupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Configurar Torneo',
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            campoJugador(
-              'Jugador 1',
-              jugador1Controller,
-            ),
-            campoJugador(
-              'Jugador 2',
-              jugador2Controller,
-            ),
-            campoJugador(
-              'Jugador 3',
-              jugador3Controller,
-            ),
-            campoJugador(
-              'Jugador 4',
-              jugador4Controller,
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: iniciarTorneo,
-                child: const Text(
-                  'Iniciar Torneo',
-                  style: TextStyle(
-                    fontSize: 22,
+      appBar: AppBar(title: const Text('Configurar Torneo')),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final maxWidth = constraints.maxWidth > 700
+                ? 560.0
+                : double.infinity;
+
+            return Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: maxWidth),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight - 32,
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        campoJugador('Jugador 1', jugador1Controller),
+                        campoJugador('Jugador 2', jugador2Controller),
+                        campoJugador('Jugador 3', jugador3Controller),
+                        campoJugador('Jugador 4', jugador4Controller),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 48,
+                          child: ElevatedButton(
+                            onPressed: iniciarTorneo,
+                            child: const Text(
+                              'Iniciar Torneo',
+                              style: TextStyle(fontSize: 22),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            );
+          },
         ),
       ),
     );

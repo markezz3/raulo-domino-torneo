@@ -270,106 +270,164 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Raulo Domino - Torneo')),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            children: [
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                color: Colors.grey[300],
-                child: Center(
-                  child: Text(
-                    '$numeroPartida Partida',
-                    style: const TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isNarrow = constraints.maxWidth < 620;
+            final isShort = constraints.maxHeight < 700;
+            final keyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+            final hideTable = keyboardOpen || (isNarrow && isShort);
+            final padding = isShort ? 8.0 : 12.0;
+
+            return Padding(
+              padding: EdgeInsets.all(padding),
+              child: Column(
+                children: [
+                  _partidaHeader(isShort),
+                  SizedBox(height: isShort ? 6 : 10),
+                  Expanded(
+                    flex: isShort ? 7 : 6,
+                    child: isNarrow
+                        ? Column(children: _teamPanels())
+                        : Row(children: _teamPanels()),
                   ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              SizedBox(
-                height: 600,
-                child: Row(
-                  children: [
-                    TeamPanel(
-                      teamName: 'Equipo 1',
-                      players: partidas[numeroPartida - 1]['equipo1']!,
-                      puntos: puntosEquipo1,
-                      score: totalEquipo1,
-                      color: Colors.blue.shade100,
-                      onAddPoints: sumarEquipo1,
-                      onUndo: deshacerEquipo1,
-                    ),
-                    TeamPanel(
-                      teamName: 'Equipo 2',
-                      players: partidas[numeroPartida - 1]['equipo2']!,
-                      puntos: puntosEquipo2,
-                      score: totalEquipo2,
-                      color: Colors.red.shade100,
-                      onAddPoints: sumarEquipo2,
-                      onUndo: deshacerEquipo2,
-                    ),
+                  SizedBox(height: isShort ? 6 : 10),
+                  _actionButtons(),
+                  if (!hideTable) ...[
+                    SizedBox(height: isShort ? 8 : 12),
+                    _tablaGeneral(isShort),
                   ],
-                ),
+                ],
               ),
-              const SizedBox(height: 10),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: reiniciarMarcador,
-                  child: const Text(
-                    'Reiniciar Marcador',
-                    style: TextStyle(fontSize: 20),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: reiniciarTorneo,
-                  child: const Text(
-                    'Nuevo Torneo',
-                    style: TextStyle(fontSize: 20),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Tabla General',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              ListView(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                children: _jugadoresOrdenados().map((jugador) {
-                  return Card(
-                    child: ListTile(
-                      title: Text(
-                        jugador,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text(
-                        'Diferencial de puntos: ${puntosEnContra[jugador]}',
-                      ),
-                      trailing: Text(
-                        '${puntosTorneo[jugador]} pts',
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _partidaHeader(bool isShort) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(isShort ? 8 : 12),
+      color: Colors.grey[300],
+      child: Center(
+        child: Text(
+          '$numeroPartida Partida',
+          style: TextStyle(
+            fontSize: isShort ? 22 : 28,
+            fontWeight: FontWeight.bold,
           ),
         ),
+      ),
+    );
+  }
+
+  List<Widget> _teamPanels() {
+    return [
+      TeamPanel(
+        teamName: 'Equipo 1',
+        players: partidas[numeroPartida - 1]['equipo1']!,
+        puntos: puntosEquipo1,
+        score: totalEquipo1,
+        color: Colors.blue.shade100,
+        onAddPoints: sumarEquipo1,
+        onUndo: deshacerEquipo1,
+      ),
+      TeamPanel(
+        teamName: 'Equipo 2',
+        players: partidas[numeroPartida - 1]['equipo2']!,
+        puntos: puntosEquipo2,
+        score: totalEquipo2,
+        color: Colors.red.shade100,
+        onAddPoints: sumarEquipo2,
+        onUndo: deshacerEquipo2,
+      ),
+    ];
+  }
+
+  Widget _actionButtons() {
+    final buttons = [
+      Expanded(
+        child: ElevatedButton(
+          onPressed: reiniciarMarcador,
+          child: const FittedBox(
+            child: Text(
+              'Reiniciar Marcador',
+              style: TextStyle(fontSize: 18),
+            ),
+          ),
+        ),
+      ),
+      Expanded(
+        child: ElevatedButton(
+          onPressed: reiniciarTorneo,
+          child: const FittedBox(
+            child: Text(
+              'Nuevo Torneo',
+              style: TextStyle(fontSize: 18),
+            ),
+          ),
+        ),
+      ),
+    ];
+
+    return SizedBox(
+      height: 44,
+      child: Row(
+        children: [
+          buttons[0],
+          const SizedBox(width: 8),
+          buttons[1],
+        ],
+      ),
+    );
+  }
+
+  Widget _tablaGeneral(bool isShort) {
+    return Expanded(
+      flex: isShort ? 2 : 3,
+      child: Column(
+        children: [
+          Text(
+            'Tabla General',
+            style: TextStyle(
+              fontSize: isShort ? 20 : 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Expanded(
+            child: ListView(
+              children: _jugadoresOrdenados().map((jugador) {
+                return Card(
+                  margin: const EdgeInsets.symmetric(vertical: 2),
+                  child: ListTile(
+                    dense: true,
+                    title: Text(
+                      jugador,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(
+                      'Diferencial: ${puntosEnContra[jugador]}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    trailing: Text(
+                      '${puntosTorneo[jugador]} pts',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
       ),
     );
   }
