@@ -67,7 +67,6 @@ class _SetupScreenState extends State<SetupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Configurar Torneo')),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -87,6 +86,15 @@ class _SetupScreenState extends State<SetupScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        const Text(
+                          'Configurar Torneo',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 18),
                         campoJugador('Jugador 1', jugador1Controller),
                         campoJugador('Jugador 2', jugador2Controller),
                         campoJugador('Jugador 3', jugador3Controller),
