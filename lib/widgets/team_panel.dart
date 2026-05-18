@@ -51,10 +51,10 @@ class _TeamPanelState extends State<TeamPanel> {
           final isVeryCompact = constraints.maxHeight < 300;
           final isNarrow = constraints.maxWidth < 260;
           final scoreSize = isVeryCompact
-              ? 34.0
+              ? 30.0
               : isCompact
-                  ? 42.0
-                  : 64.0;
+              ? 38.0
+              : 48.0;
 
           return Container(
             margin: const EdgeInsets.all(4),
@@ -63,23 +63,63 @@ class _TeamPanelState extends State<TeamPanel> {
               children: [
                 Container(
                   width: double.infinity,
-                  padding: EdgeInsets.all(isVeryCompact ? 4 : isCompact ? 6 : 8),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isVeryCompact ? 6 : 10,
+                    vertical: isVeryCompact
+                        ? 4
+                        : isCompact
+                        ? 6
+                        : 8,
+                  ),
                   color: widget.color,
-                  child: Column(
+                  child: Row(
                     children: [
-                      Text(
-                        widget.teamName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      Expanded(
+                        flex: 5,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              widget.teamName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              widget.players,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: isVeryCompact
+                                    ? 11
+                                    : isCompact
+                                    ? 12
+                                    : 14,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 3),
-                      Text(
-                        widget.players,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: isVeryCompact ? 11 : isCompact ? 12 : 14),
+                      SizedBox(width: isVeryCompact ? 8 : 14),
+                      Expanded(
+                        flex: 3,
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              '${widget.score}',
+                              style: TextStyle(
+                                fontSize: scoreSize,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -87,44 +127,34 @@ class _TeamPanelState extends State<TeamPanel> {
                 Expanded(
                   child: Padding(
                     padding: EdgeInsets.symmetric(
-                      horizontal: isVeryCompact ? 4 : 8,
-                      vertical: isVeryCompact ? 2 : 6,
+                      horizontal: isVeryCompact ? 8 : 14,
+                      vertical: isVeryCompact ? 6 : 10,
                     ),
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          width: isVeryCompact ? 56 : 72,
-                          child: _scoreHistory(isCompact, isVeryCompact),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Center(
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                '${widget.score}',
-                                style: TextStyle(
-                                  fontSize: scoreSize,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                    child: _scoreHistory(isCompact, isVeryCompact),
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.all(isVeryCompact ? 4 : isCompact ? 6 : 8),
+                  padding: EdgeInsets.all(
+                    isVeryCompact
+                        ? 4
+                        : isCompact
+                        ? 6
+                        : 8,
+                  ),
                   child: isVeryCompact
                       ? Row(
                           children: [
-                            Expanded(child: _pointsField(isCompact, isVeryCompact)),
+                            Expanded(
+                              child: _pointsField(isCompact, isVeryCompact),
+                            ),
                             const SizedBox(width: 6),
-                            Expanded(child: _addButton(isCompact, isVeryCompact)),
+                            Expanded(
+                              child: _addButton(isCompact, isVeryCompact),
+                            ),
                             const SizedBox(width: 6),
-                            Expanded(child: _undoButton(isCompact, isVeryCompact)),
+                            Expanded(
+                              child: _undoButton(isCompact, isVeryCompact),
+                            ),
                           ],
                         )
                       : isNarrow
@@ -134,16 +164,22 @@ class _TeamPanelState extends State<TeamPanel> {
                             const SizedBox(height: 6),
                             Row(
                               children: [
-                                Expanded(child: _addButton(isCompact, isVeryCompact)),
+                                Expanded(
+                                  child: _addButton(isCompact, isVeryCompact),
+                                ),
                                 const SizedBox(width: 6),
-                                Expanded(child: _undoButton(isCompact, isVeryCompact)),
+                                Expanded(
+                                  child: _undoButton(isCompact, isVeryCompact),
+                                ),
                               ],
                             ),
                           ],
                         )
                       : Row(
                           children: [
-                            Expanded(child: _pointsField(isCompact, isVeryCompact)),
+                            Expanded(
+                              child: _pointsField(isCompact, isVeryCompact),
+                            ),
                             const SizedBox(width: 8),
                             Column(
                               children: [
@@ -165,7 +201,11 @@ class _TeamPanelState extends State<TeamPanel> {
 
   Widget _pointsField(bool isCompact, bool isVeryCompact) {
     return SizedBox(
-      height: isVeryCompact ? 34 : isCompact ? 40 : 48,
+      height: isVeryCompact
+          ? 34
+          : isCompact
+          ? 40
+          : 48,
       child: TextField(
         controller: puntosController,
         keyboardType: TextInputType.number,
@@ -193,28 +233,48 @@ class _TeamPanelState extends State<TeamPanel> {
       );
     }
 
-    return ListView.builder(
-      padding: EdgeInsets.zero,
-      itemCount: widget.puntos.length,
-      itemBuilder: (context, index) {
-        final puntos = widget.puntos[index];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth < 260
+            ? 3
+            : constraints.maxWidth < 420
+            ? 4
+            : 5;
 
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 1),
-          child: Text(
-            '+$puntos',
-            maxLines: 1,
-            textAlign: TextAlign.right,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: isVeryCompact
-                  ? 13
-                  : isCompact
+        return GridView.builder(
+          padding: EdgeInsets.zero,
+          itemCount: widget.puntos.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            childAspectRatio: isVeryCompact ? 2.8 : 3.4,
+            crossAxisSpacing: 6,
+            mainAxisSpacing: 6,
+          ),
+          itemBuilder: (context, index) {
+            final puntos = widget.puntos[index];
+
+            return Container(
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.45),
+                border: Border.all(color: Colors.black26),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                '+$puntos',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: isVeryCompact
+                      ? 13
+                      : isCompact
                       ? 15
                       : 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            );
+          },
         );
       },
     );
@@ -222,7 +282,11 @@ class _TeamPanelState extends State<TeamPanel> {
 
   Widget _addButton(bool isCompact, bool isVeryCompact) {
     return SizedBox(
-      height: isVeryCompact ? 32 : isCompact ? 34 : 38,
+      height: isVeryCompact
+          ? 32
+          : isCompact
+          ? 34
+          : 38,
       child: ElevatedButton(
         onPressed: agregarPuntos,
         style: ElevatedButton.styleFrom(
@@ -235,7 +299,11 @@ class _TeamPanelState extends State<TeamPanel> {
 
   Widget _undoButton(bool isCompact, bool isVeryCompact) {
     return SizedBox(
-      height: isVeryCompact ? 32 : isCompact ? 34 : 38,
+      height: isVeryCompact
+          ? 32
+          : isCompact
+          ? 34
+          : 38,
       child: ElevatedButton(
         onPressed: widget.onUndo,
         style: ElevatedButton.styleFrom(

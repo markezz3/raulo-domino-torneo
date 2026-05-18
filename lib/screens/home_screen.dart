@@ -23,6 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late List<Map<String, String>> partidas;
   late Map<String, int> puntosTorneo;
   late Map<String, int> puntosEnContra;
+  final PageController marcadorPageController = PageController();
 
   @override
   void initState() {
@@ -66,6 +67,27 @@ class _HomeScreenState extends State<HomeScreen> {
   List<int> puntosEquipo1 = [];
   List<int> puntosEquipo2 = [];
   int numeroPartida = 1;
+  int paginaActual = 0;
+  bool salidaConfirmada = false;
+
+  @override
+  void dispose() {
+    marcadorPageController.dispose();
+    super.dispose();
+  }
+
+  String get nombreRonda {
+    switch (numeroPartida) {
+      case 1:
+        return '1era Ronda';
+      case 2:
+        return '2da Ronda';
+      case 3:
+        return '3ra Ronda';
+      default:
+        return '$numeroPartida Ronda';
+    }
+  }
 
   int get totalEquipo1 {
     return puntosEquipo1.fold(0, (total, item) => total + item);
@@ -129,9 +151,9 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Partida Terminada'),
+          title: const Text('Ronda Terminada'),
           content: Text(
-            '$ganadorPartida gano la partida\n\n'
+            '$ganadorPartida gano la ronda\n\n'
             'Resultado:\n'
             '$puntosGanador pts vs $puntosPerdedor pts',
           ),
@@ -255,55 +277,195 @@ class _HomeScreenState extends State<HomeScreen> {
     return jugadores.first;
   }
 
-  void reiniciarMarcador() {
+  Future<bool> confirmarAccion() async {
+    final confirmado = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text(
+            '\u00bfEst\u00e1s seguro de aceptar esta acci\u00f3n?',
+          ),
+          content: const Text(
+            'Se borrar\u00e1 todo el historial y datos de partida',
+            style: TextStyle(
+              color: Colors.red,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Volver'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('S\u00ed, estoy seguro'),
+            ),
+          ],
+        );
+      },
+    );
+
+    return confirmado ?? false;
+  }
+
+  Future<void> reiniciarMarcador() async {
+    final confirmado = await confirmarAccion();
+    if (!confirmado || !mounted) return;
+
     setState(() {
       puntosEquipo1.clear();
       puntosEquipo2.clear();
     });
   }
 
-  void reiniciarTorneo() {
+  Future<void> reiniciarTorneo() async {
+    final confirmado = await confirmarAccion();
+    if (!confirmado || !mounted) return;
+
+    setState(() {
+      salidaConfirmada = true;
+    });
+
     Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Raulo Domino - Torneo')),
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final isNarrow = constraints.maxWidth < 620;
-            final isShort = constraints.maxHeight < 700;
-            final keyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
-            final hideTable = keyboardOpen || (isNarrow && isShort);
-            final padding = isShort ? 8.0 : 12.0;
+    return PopScope(
+      canPop: salidaConfirmada,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
 
-            return Padding(
-              padding: EdgeInsets.all(padding),
-              child: Column(
-                children: [
-                  _partidaHeader(isShort),
-                  SizedBox(height: isShort ? 6 : 10),
-                  Expanded(
-                    flex: isShort ? 7 : 6,
-                    child: isNarrow
-                        ? Column(children: _teamPanels())
-                        : Row(children: _teamPanels()),
+        final confirmado = await confirmarAccion();
+        if (!confirmado || !context.mounted) return;
+
+        setState(() {
+          salidaConfirmada = true;
+        });
+
+        Navigator.pop(context);
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: reiniciarTorneo,
+          ),
+          title: const Text('Raulo Domino - Torneo'),
+          actions: [
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.menu),
+              onSelected: (value) {
+                if (value == 'reiniciarMarcador') {
+                  reiniciarMarcador();
+                }
+
+                if (value == 'nuevoTorneo') {
+                  reiniciarTorneo();
+                }
+              },
+              itemBuilder: (context) {
+                return const [
+                  PopupMenuItem(
+                    value: 'reiniciarMarcador',
+                    child: Text('Reiniciar Marcador'),
                   ),
-                  SizedBox(height: isShort ? 6 : 10),
-                  _actionButtons(),
-                  if (!hideTable) ...[
-                    SizedBox(height: isShort ? 8 : 12),
-                    _tablaGeneral(isShort),
+                  PopupMenuItem(
+                    value: 'nuevoTorneo',
+                    child: Text('Nuevo Torneo'),
+                  ),
+                ];
+              },
+            ),
+          ],
+        ),
+        body: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isNarrow = constraints.maxWidth < 620;
+              final isShort = constraints.maxHeight < 700;
+              final keyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+              final hideTable = keyboardOpen;
+              final padding = isShort ? 8.0 : 12.0;
+
+              return Padding(
+                padding: EdgeInsets.all(padding),
+                child: Column(
+                  children: [
+                    _partidaHeader(isShort),
+                    SizedBox(height: isShort ? 6 : 10),
+                    Expanded(
+                      flex: isShort ? 8 : 6,
+                      child: isNarrow && !keyboardOpen
+                          ? _mobilePages(isShort)
+                          : _scoreboardView(isNarrow),
+                    ),
+                    if (!isNarrow && !hideTable) ...[
+                      SizedBox(height: isShort ? 8 : 12),
+                      _tablaGeneral(isShort),
+                    ],
                   ],
-                ],
-              ),
-            );
-          },
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
+  }
+
+  Widget _mobilePages(bool isShort) {
+    return Column(
+      children: [
+        Expanded(
+          child: PageView(
+            controller: marcadorPageController,
+            onPageChanged: (page) {
+              setState(() {
+                paginaActual = page;
+              });
+            },
+            children: [
+              _scoreboardView(true),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                child: _tablaGeneralContent(isShort),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: isShort ? 6 : 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(2, (index) {
+            final selected = paginaActual == index;
+
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              width: selected ? 18 : 8,
+              height: 8,
+              margin: const EdgeInsets.symmetric(horizontal: 3),
+              decoration: BoxDecoration(
+                color: selected ? Colors.black87 : Colors.black26,
+                borderRadius: BorderRadius.circular(99),
+              ),
+            );
+          }),
+        ),
+      ],
+    );
+  }
+
+  Widget _scoreboardView(bool isNarrow) {
+    return isNarrow
+        ? Column(children: _teamPanels())
+        : Row(children: _teamPanels());
   }
 
   Widget _partidaHeader(bool isShort) {
@@ -313,7 +475,7 @@ class _HomeScreenState extends State<HomeScreen> {
       color: Colors.grey[300],
       child: Center(
         child: Text(
-          '$numeroPartida Partida',
+          nombreRonda,
           style: TextStyle(
             fontSize: isShort ? 22 : 28,
             fontWeight: FontWeight.bold,
@@ -346,89 +508,68 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
   }
 
-  Widget _actionButtons() {
-    final buttons = [
-      Expanded(
-        child: ElevatedButton(
-          onPressed: reiniciarMarcador,
-          child: const FittedBox(
-            child: Text(
-              'Reiniciar Marcador',
-              style: TextStyle(fontSize: 18),
-            ),
-          ),
-        ),
-      ),
-      Expanded(
-        child: ElevatedButton(
-          onPressed: reiniciarTorneo,
-          child: const FittedBox(
-            child: Text(
-              'Nuevo Torneo',
-              style: TextStyle(fontSize: 18),
-            ),
-          ),
-        ),
-      ),
-    ];
-
-    return SizedBox(
-      height: 44,
-      child: Row(
-        children: [
-          buttons[0],
-          const SizedBox(width: 8),
-          buttons[1],
-        ],
-      ),
-    );
-  }
-
   Widget _tablaGeneral(bool isShort) {
     return Expanded(
       flex: isShort ? 2 : 3,
-      child: Column(
-        children: [
-          Text(
-            'Tabla General',
-            style: TextStyle(
-              fontSize: isShort ? 20 : 24,
-              fontWeight: FontWeight.bold,
-            ),
+      child: _tablaGeneralContent(isShort),
+    );
+  }
+
+  Widget _tablaGeneralContent(bool isShort) {
+    return Column(
+      children: [
+        Text(
+          'Tabla General',
+          style: TextStyle(
+            fontSize: isShort ? 20 : 24,
+            fontWeight: FontWeight.bold,
           ),
-          const SizedBox(height: 4),
-          Expanded(
-            child: ListView(
-              children: _jugadoresOrdenados().map((jugador) {
-                return Card(
-                  margin: const EdgeInsets.symmetric(vertical: 2),
-                  child: ListTile(
-                    dense: true,
-                    title: Text(
-                      jugador,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(
-                      'Diferencial: ${puntosEnContra[jugador]}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    trailing: Text(
-                      '${puntosTorneo[jugador]} pts',
+        ),
+        const SizedBox(height: 4),
+        Expanded(
+          child: ListView(
+            children: _jugadoresOrdenados().asMap().entries.map((entry) {
+              final posicion = entry.key + 1;
+              final jugador = entry.value;
+
+              return Card(
+                margin: const EdgeInsets.symmetric(vertical: 2),
+                child: ListTile(
+                  dense: true,
+                  leading: SizedBox(
+                    width: 32,
+                    child: Text(
+                      '$posicion\u00b0',
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                );
-              }).toList(),
-            ),
+                  title: Text(
+                    jugador,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    'Diferencial: ${puntosEnContra[jugador]}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  trailing: Text(
+                    '${puntosTorneo[jugador]} pts',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
